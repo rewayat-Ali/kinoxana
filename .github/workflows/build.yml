@@ -23,16 +23,16 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Set up Android SDK
-      uses: android-actions/setup-android@v3
+    - name: Setup Android SDK
+      run: |
+        export ANDROID_HOME=/usr/local/lib/android/sdk
+        export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
+        echo "ANDROID_HOME=" >> 
+        echo "ANDROID_SDK_ROOT=" >> 
+        /cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.2" "platforms;android-33" < /dev/null 2>/dev/null || true
 
     - name: Build
       run: |
-        echo "ANDROID_HOME="
-        echo "ANDROID_SDK_ROOT="
-        sdkmanager --list 2>/dev/null | head -5 || echo "sdkmanager not in PATH"
-        sdkmanager "build-tools;33.0.2" "platforms;android-33" < /dev/null 2>/dev/null || echo "sdkmanager failed"
-
         npm install -g cordova
         npm install
         npx cordova platform add android@14.0.1 --no-confirm 2>&1
