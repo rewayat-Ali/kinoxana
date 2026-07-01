@@ -25,21 +25,43 @@ jobs:
 
     - name: Set up Android SDK
       uses: android-actions/setup-android@v3
+      with:
+        api-level: 33
+        build-tools: 33.0.2
+        cmdline-tools: latest
 
-    - name: Build
+    - name: Build APK
       run: |
-        yes | sdkmanager "build-tools;33.0.2" "platforms;android-33" 2>/dev/null || true
-        npm install -g cordova
+        # Android SDK
+        yes | /cmdline-tools/latest/bin/sdkmanager "platforms;android-33" 2>/dev/null || true
+        export ANDROID_HOME=
+        export ANDROID_SDK_ROOT=
+        
+        # Install Cordova
+        npm install -g cordova@12.0.0
         npm install
-        npx cordova platform add android@12.0.1 --no-confirm 2>/dev/null || true
-        yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
+        
+        # Add platform
+        npx cordova platform add android@12.0.1 --nofetch 2>/dev/null || true
+        
+        # ===== FIX: create proper gradle wrapper =====
         cd platforms/android
-        cat wrapper.gradle
+        # Remove the broken wrapper.gradle
+        rm -f wrapper.gradle
+        # Generate a clean gradle wrapper with Gradle 8.10
+        gradle wrapper --gradle-version 8.10.2 2>/dev/null || /cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null
         cd ../..
+        
+        # Build
+        cp platforms/android/gradlew ./gradlew 2>/dev/null || true
         npx cordova build android --debug 2>&1
+
+    - name: Find APK
+      run: find platforms/ -name "*.apk" 2>/dev/null || echo "No APK found"
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: kinoxana-debug-apk
-        path: platforms/android/**/*.apk
+        path: |
+          platforms/android/**/*.apk
