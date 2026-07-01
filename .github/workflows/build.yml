@@ -26,19 +26,17 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Use Gradle 8.10
-      uses: gradle/actions/setup-gradle@v4
-      with:
-        gradle-version: '8.10'
-
-    - name: Install Cordova latest
-      run: npm install -g cordova
-
-    - name: Build APK
+    - name: Install tools and build
       run: |
+        # Install required build tools
+        yes | sdkmanager "build-tools;33.0.2" "platforms;android-33" 2>/dev/null || true
+        
+        # Install Cordova
+        npm install -g cordova
+        
+        # Build
         npm install
         cordova platform add android --no-confirm 2>/dev/null || echo 'platform exists'
-        sdkmanager --licenses < /dev/null 2>/dev/null || true
         cordova build android --debug
 
     - name: Upload Debug APK
