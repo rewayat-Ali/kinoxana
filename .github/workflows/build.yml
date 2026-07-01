@@ -26,21 +26,20 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Build APK
+    - name: Build
       run: |
         yes | sdkmanager "build-tools;33.0.2" "platforms;android-33" 2>/dev/null || true
         npm install -g cordova
         npm install
-        cordova platform add android --no-confirm 2>/dev/null || true
+        npx cordova platform add android@12.0.1 --no-confirm 2>/dev/null || true
+        yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
         cd platforms/android
-        gradle wrapper --gradle-version 8.10 2>/dev/null || true
+        cat wrapper.gradle
         cd ../..
-        cordova build android --debug 2>&1
+        npx cordova build android --debug 2>&1
 
-    - name: Find and Upload APK
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: kinoxana-debug-apk
-        path: |
-          platforms/android/app/build/outputs/apk/**/*.apk
-          platforms/android/build/outputs/apk/**/*.apk
+        path: platforms/android/**/*.apk
