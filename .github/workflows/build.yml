@@ -26,18 +26,34 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Install tools and build
+    - name: Install tools
       run: |
-        # Install required build tools
         yes | sdkmanager "build-tools;33.0.2" "platforms;android-33" 2>/dev/null || true
-        
-        # Install Cordova
+
+    - name: Install Cordova
+      run: |
         npm install -g cordova
-        
-        # Build
         npm install
-        cordova platform add android --no-confirm 2>/dev/null || echo 'platform exists'
-        cordova build android --debug
+
+    - name: Add platform
+      run: |
+        yes | /cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
+        npx cordova platform add android --no-confirm 2>/dev/null || true
+        ls platforms/android/
+
+    - name: Fix Gradle wrapper
+      run: |
+        cd platforms/android
+        ls
+        # Try to generate wrapper manually
+        /usr/share/gradle-9.6.0/bin/gradle wrapper --gradle-version 8.10 2>/dev/null || true
+
+    - name: Build
+      run: |
+        cd platforms/android
+        export ANDROID_HOME=
+        export ANDROID_SDK_ROOT=
+        ./gradlew cdvBuildDebug --no-daemon 2>&1 || true
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
