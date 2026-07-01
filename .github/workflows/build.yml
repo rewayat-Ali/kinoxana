@@ -29,17 +29,21 @@ jobs:
     - name: Install Cordova
       run: npm install -g cordova@12.0.0
 
-    - name: Install dependencies
-      run: npm install
+    - name: Check environment
+      run: |
+        echo JAVA_HOME=
+        echo ANDROID_HOME=
+        java -version
+        node --version
+        npm --version
+        cordova --version
 
-    - name: Accept Android SDK licenses
-      run: yes | /cmdline-tools/latest/bin/sdkmanager --licenses || yes | /cmdline-tools/latest/bin/sdkmanager --licenses || echo 'sdkmanager not found, trying other paths' && ls / && ls /
-
-    - name: Add Android platform
-      run: cordova platform add android@12.0.1 --no-confirm
-
-    - name: Build Debug APK
-      run: cordova build android --debug
+    - name: Install dependencies and build
+      run: |
+        npm install
+        cordova platform add android@12.0.1 --no-confirm 2>/dev/null || echo 'platform already exists, continuing'
+        yes | sdkmanager --licenses 2>/dev/null || true
+        cordova build android --debug
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
