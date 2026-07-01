@@ -28,10 +28,14 @@ jobs:
 
     - name: Build
       run: |
-        yes | /cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.2" "platforms;android-33" 2>/dev/null || true
+        echo "ANDROID_HOME="
+        echo "ANDROID_SDK_ROOT="
+        sdkmanager --list 2>/dev/null | head -5 || echo "sdkmanager not in PATH"
+        sdkmanager "build-tools;33.0.2" "platforms;android-33" < /dev/null 2>/dev/null || echo "sdkmanager failed"
+
         npm install -g cordova
         npm install
-        npx cordova platform add android@14.0.1 --no-confirm 2>/dev/null || echo 'Platform ok'
+        npx cordova platform add android@14.0.1 --no-confirm 2>&1
         npx cordova build android --debug 2>&1
 
     - name: Upload APK
